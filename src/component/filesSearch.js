@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch,faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
 const FilesSearch = ({title,startSearch}) => {
-    const [active,setActive] = useState(true);
-    const [value,setValue] = useState(false);
+    const [active,setActive] = useState(false);
+    const [value,setValue] = useState('');
     const node = useRef(null)
     // close search
     const searchClose = ()=>{
@@ -16,12 +16,14 @@ const FilesSearch = ({title,startSearch}) => {
     const searchBegin = ()=>{
         setActive(true)
     }
+   
     // set shortcul key
     useEffect(() => {
         const keyHandle = (e) =>{
-            console.log(e)
             if(e.keyCode === 13&& active) {
-                startSearch(value)
+                startSearch(value);
+                setActive(false);
+                setValue('');
             }
             else if (e.keyCode === 27 && active) {
                 searchClose();
@@ -31,7 +33,7 @@ const FilesSearch = ({title,startSearch}) => {
         return () => {
             document.removeEventListener('keyup',keyHandle);
         };
-    },[active]);
+    });
 
     // get focus
     useEffect(() => {
@@ -41,7 +43,7 @@ const FilesSearch = ({title,startSearch}) => {
       
     }, [active]);
     return (
-        <div className="alert alert-primary d-flex justify-content-between align-items-center">
+        <div className="alert alert-primary d-flex justify-content-between align-items-center mb-0 no-border">
             {
               !active&&
                 <>
@@ -55,8 +57,7 @@ const FilesSearch = ({title,startSearch}) => {
             {
                   active && 
                   <>
-                  
-                      <input className="form-control col-10" placeholder="请输入标题搜索" ref={node} value = {value} onChange = {(e)=>{setValue(e.target.value)}}></input>
+                      <input className="form-control col-10" placeholder="请输入标题搜索" ref={node} value = {value} onChange = {(e)=>{setValue(e.target.value);console.log(value)}}></input>
                       <button type="button" className="icon-button col-2" onClick = {searchClose}>
                         <FontAwesomeIcon icon={faTimesCircle} size="lg">
                         </FontAwesomeIcon>

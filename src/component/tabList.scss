@@ -1,0 +1,23 @@
+.nav-link {
+    .icon-tab {
+        display: none;
+    }
+   
+}
+.nav-link:hover {
+    .icon-tab {
+        display: inline-block;
+    }
+}
+.nav-link.active {
+    .icon-tab {
+        display: inline-block;
+    }
+}
+
+.nav-link.edit {
+    .icon-tab {
+        display: inline-block;
+    }
+   
+}
