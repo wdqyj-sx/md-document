@@ -6,12 +6,11 @@ import { faEdit ,faTrash,faWindowClose} from "@fortawesome/free-solid-svg-icons"
 
 const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
   const [activeId, setActiveId] = useState(false);
-  const [value,setValue] = useState("")
+  const [value,setValue] = useState("");
   // shortcut key
   useEffect(() => {
       const handle = (e)=>{
             if(e.keyCode===13&&activeId){
-                console.log(value)
                 changeTitle(activeId,value)
                 setValue("")
                 setActiveId(false);
@@ -26,6 +25,14 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
           document.removeEventListener("keyup",handle);
       };
   }, [value]);
+  useEffect(() => {
+     let newfiles = files.filter(item => {
+         return item.isEdit;
+     })
+     if(newfiles.length>0){
+         setActiveId(newfiles[0].id);
+     }
+  }, [files]);
   //click editButton
   const clickEdit = (id,title)=>{
       setValue(title)
@@ -75,7 +82,7 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
 };
 
 FilesList.prototype = {
-  files: PropTypes.object,
+  files: PropTypes.array,
   changeTitle: PropTypes.func,
   deleteFile: PropTypes.func,
   listClick:PropTypes.func

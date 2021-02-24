@@ -10,16 +10,17 @@ import { faPlus, faFileImport } from "@fortawesome/free-solid-svg-icons";
 import "easymde/dist/easymde.min.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import { v4 as uuidv4 } from 'uuid';
 
 const Store = window.require("electron-store");
 new Store();
 
 function App() {
-  const [files, setFiles] = useState(toOBJ(defaultFiles));
-  const [activeId, setActiveId] = useState("1");
+  const [files, setFiles] = useState({});
+  const [activeId, setActiveId] = useState();
   const [openFilesID, setOpenFilesID] = useState([]);
   const [unsaveId, setunsaveId] = useState([]);
-  const [searchFiles,setSearchFiles] = useState(defaultFiles);
+  const [searchFiles,setSearchFiles] = useState([]);
   const activeFile = files[activeId];
   const arrFiles = toARR(files);
   const openFiles = openFilesID.map(id =>{
@@ -30,6 +31,9 @@ function App() {
     setActiveId(id);
   };
   const deleteTabId = (id) => {
+    if(!openFilesID.includes(id)){
+      return;
+    }
     let newFilesID = openFilesID.filter((item) => {
       return item !== id;
     });
@@ -50,30 +54,32 @@ function App() {
     setOpenFilesID(newFilesID);
   };
   const changeListTitle = (id, value) => {
-    console.log(id,value)
-    let newFiles = files[id];
-    console.log(newFiles);
+    if(value){
+      let newFiles = files[id];
     newFiles.title = value;
+    if(newFiles.isEdit){
+      newFiles.isEdit = false;
+      addTab(id);
+    }
+   
     setFiles({
       ...files,
       [id]: newFiles,
     });
+    }
+    
 
   };
   const deleteListFile = (id) => {
     delete files[id];
-    setFiles(files);
-    console.log(files);
-    console.log(arrFiles);
+    setFiles({...files});
+    deleteTabId(id);
+   
   }
   const addTab = (id) => {
-    console.log(id);
-    console.log(!openFilesID.includes(id));
     if(!openFilesID.includes(id)){
       openFilesID.push(id);
       setOpenFilesID(openFilesID);
-      console.log(openFilesID);
-     
     }
     setActiveId(id);
    
@@ -94,20 +100,27 @@ function App() {
     console.log(searchFiles);
   }
   const createFile = () => {
-      let newId = 0;
-      let newFile = {
-        id:newId,
-        title:'',
-        body:'##请输入内容',
-        createdAt:new Date().getTime(),
-        isEdit:true,
-      };
-      setFiles({
-        ...files,
-        [newId]:newFile
+    
+      let newId = uuidv4();
+      let hasfile = arrFiles.filter(item => {
+        return item.isEdit;
       })
-      console.log('hha');
-      console.log(files);
+      if(!hasfile.length>0){
+        let newFile = {
+          id:newId,
+          title:'',
+          body:'##请输入内容',
+          createdAt:new Date().getTime(),
+          isEdit:true,
+        };
+        setFiles({
+          ...files,
+          [newId]:newFile
+        })
+
+      }
+     
+     
   }
   return (
     <div className="App row mx-0">
@@ -120,7 +133,7 @@ function App() {
           }}
         ></FilesSearch>
         <FilesList
-          files={searchFiles.length<arrFiles.length?searchFiles:arrFiles}
+          files={searchFiles.length>0 && searchFiles.length<arrFiles.length?searchFiles:arrFiles}
           changeTitle={(id, value) => {
             changeListTitle(id, value);
           }}
