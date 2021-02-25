@@ -10,7 +10,8 @@ app.on("ready",()=>{
         width:1440,
         height:765,
         webPreferences:{
-            nodeIntegration:true
+            nodeIntegration:true,
+            enableRemoteModule:true 
         }
     })
     // open debug

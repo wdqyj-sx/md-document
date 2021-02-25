@@ -10,21 +10,22 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
   // shortcut key
   useEffect(() => {
       const handle = (e)=>{
+         
             if(e.keyCode===13&&activeId){
                 changeTitle(activeId,value)
                 setValue("")
                 setActiveId(false);
             }
             else if(e.keyCode===27&&activeId){
-                setActiveId(false)
-                setValue("")
+                cancelEdit(activeId);
+                
             }
       }
       document.addEventListener("keyup",handle);
       return () => {
           document.removeEventListener("keyup",handle);
       };
-  }, [value]);
+  });
   useEffect(() => {
      let newfiles = files.filter(item => {
          return item.isEdit;
@@ -41,7 +42,13 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
   // cancel editButton 
   const cancelEdit = (id) =>{
       setActiveId(false);
-      setValue("")
+      setValue("");
+      let newfile = files.filter(item => {
+        return  item.isEdit;
+      })
+      if(newfile.length>0) {
+          deleteFile(id);
+      }
   }
   // delete file
  
