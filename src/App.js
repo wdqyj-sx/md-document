@@ -174,6 +174,15 @@ function App() {
       });
     }
   };
+  const importFiles = () => {
+    console.log('hah')
+    remote.dialog.showOpenDialog({
+      title:'请选择 markdown文件',
+      defaultFiles:localStroge,
+      filters:[{name:'Markdown',extensions:['md']}],
+      properties:['multiSelections']
+    }).then((obj)=>{console.log(obj.filePaths)})
+  }
   return (
     <div className="App row mx-0">
       <div className="col-3 px-0 left-panel">
@@ -212,7 +221,8 @@ function App() {
           <Btn
             btnSty={"btn btn-success col"}
             text={"导入"}
-            icon={faFileImport}
+            icon={faFileImport} 
+           btnClick={importFiles}
           ></Btn>
         </div>
       </div>
