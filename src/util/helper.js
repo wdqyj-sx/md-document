@@ -10,3 +10,17 @@ export const toOBJ = (arr) => {
 export const toARR = (obj) =>{
    return Object.keys(obj).map(key => obj[key]);
 }
+
+export const findParent = (currentNode,wrap)=>{
+   let newNode = currentNode;
+  
+   while(newNode !==null) {
+  
+      if(newNode.classList.contains(wrap)){
+        
+         return newNode;
+      }
+      newNode = newNode.parentNode;
+   }
+   return false;
+}

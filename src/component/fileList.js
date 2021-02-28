@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMarkdown } from "@fortawesome/free-brands-svg-icons";
 import { faEdit ,faTrash,faWindowClose} from "@fortawesome/free-solid-svg-icons";
-
+import useContentMenu from "../hook/useContentMenu";
+import {findParent} from "../util/helper";
+const { remote } = window.require("electron");
+const {Menu,MenuItem} = remote;
 const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
   const [activeId, setActiveId] = useState(false);
   const [value,setValue] = useState("");
@@ -34,6 +37,35 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
          setActiveId(newfiles[0].id);
      }
   }, [files]);
+
+ 
+  let contextNode = useContentMenu(
+    [
+        {
+                    label:'更改',
+                    click: ()=>{
+                        // console.log('更改')
+                        // console.log(contextNode.current)
+                        let newNode = findParent(contextNode.current,'li-item');
+                       
+                        if(newNode){
+                          clickEdit(newNode.dataset.id,newNode.dataset.title);
+                        }
+                    }
+        },
+        {
+                    label:'删除',
+                    click: ()=>{
+                        let newNode = findParent(contextNode.current,'li-item');
+                       
+                        if(newNode){
+                           
+                            deleteFile(newNode.dataset.id);
+                        }
+                    }
+                }
+    ],'.li-wrap'
+  )
   //click editButton
   const clickEdit = (id,title)=>{
       setValue(title)
@@ -53,11 +85,14 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
   // delete file
  
   return (
-    <ul className="list-group list-group-flush  ">
+    <ul className="list-group list-group-flush  li-wrap">
         {
             files.map(item=>{
                 if(activeId!==item.id&&!item.isEdit){
-                    return  <li className="list-group-item d-flex align-items-center px-1" key={item.id}>
+                    return  <li className="list-group-item d-flex align-items-center px-1 li-item" key={item.id} 
+                    data-id={item.id}
+                    data-title = {item.title}
+                    >
                     <span className="col-2"> <FontAwesomeIcon icon={faMarkdown}></FontAwesomeIcon></span>
                       <span className="col-7" onClick = { ()=>{listClick(item.id)} }>{item.title}</span> 
                       <span className="d-flex col-3 ">
@@ -71,7 +106,8 @@ const FilesList = ({ files, changeTitle, deleteFile ,listClick}) => {
                        </li>
                 }else {
                     return (
-                        <li className="list-group-item d-flex align-items-center px-1" key={item.id}>
+                        <li className="list-group-item d-flex align-items-center px-1 li-item" key={item.id}  data-id={item.id}
+                        data-title = {item.title}>
                             <input className="form-control col-10" value={value} onChange={e=>{setValue(e.target.value)}}></input>
                             <button type="button" className="icon-button col-2" onClick={()=>{cancelEdit(item.id)}}>
                                 <FontAwesomeIcon icon={faWindowClose}></FontAwesomeIcon>

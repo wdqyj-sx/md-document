@@ -12,7 +12,7 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { v4 as uuidv4 } from "uuid";
 import fileHelper from "./util/fileHelper";
-const { join } = window.require("path");
+const { join,basename,extname,dirname } = window.require("path");
 const { remote, ipcRenderer } = window.require("electron");
 const Store = window.require("electron-store");
 const recordStroge = new Store();
@@ -70,10 +70,11 @@ function App() {
     setOpenFilesID(newFilesID);
   };
   const changeListTitle = (id, value) => {
+    
     if(!value) {
       return;
     }
-    let  newPath = join(localStroge, `${value}.md`);
+    let  newPath =files[id].isEdit ? join(localStroge, `${value}.md`):join(dirname(files[id].path), `${value}.md`);
     let newFiles = {
       ...files[id],
       title:value,
@@ -87,13 +88,13 @@ function App() {
    
       if (files[id].isEdit) { 
         fileHelper.writeFiles(newPath,newFiles.body).then(() => {
-          console.log(nowFiles)
+       
           setFiles(nowFiles);
           setRecord(nowFiles);
          
         });
       }else {
-        fileHelper.renameFiles(join(localStroge,`${files[id].title}.md`),newPath).then(()=>{
+        fileHelper.renameFiles(files[id].path,newPath).then(()=>{
           setFiles(nowFiles);
           setRecord(nowFiles);
          
@@ -113,7 +114,7 @@ function App() {
     if (!openFilesID.includes(id)) {
       openFilesID.push(id);
       if(!files[id].isRead){
-       console.log(files);
+      
         fileHelper.readFiles(files[id].path).then(value=>{
           let newfile = {
             ...files[id],
@@ -131,7 +132,7 @@ function App() {
     setActiveId(id);
   };
   const editContent = (value) => {
-    console.log(value);
+  
     if (!unsaveId.includes(activeId)) {
       unsaveId.push(activeId);
       setunsaveId(unsaveId);
@@ -175,13 +176,49 @@ function App() {
     }
   };
   const importFiles = () => {
-    console.log('hah')
+   
     remote.dialog.showOpenDialog({
       title:'请选择 markdown文件',
       defaultFiles:localStroge,
       filters:[{name:'Markdown',extensions:['md']}],
       properties:['multiSelections']
-    }).then((obj)=>{console.log(obj.filePaths)})
+    }).then((obj)=>{
+    
+      if(Array.isArray(obj.filePaths)){
+        console.log('hah')
+        const filterPaths = obj.filePaths.filter(item => {
+          const alreadyAdded = Object.values(files).find(file => {
+            return file.path === item
+          })
+          return !alreadyAdded;
+        })
+       const filterFiles =  filterPaths.map(path => {
+      
+         return {
+           id: uuidv4(),
+           isEdit:false,
+           title:basename(path,extname(path)),
+           path,
+          
+         }
+       })
+      
+       setFiles({
+         ...files,
+         ...toOBJ(filterFiles)
+       })
+       setRecord({
+        ...files,
+        ...toOBJ(filterFiles)
+       })
+       if(filterFiles.length>0){
+         remote.dialog.showMessageBox({
+           type:'info',
+           message:`成功导入了${filterFiles.length}个文件`
+         })
+       }
+      }
+    })
   }
   return (
     <div className="App row mx-0">
