@@ -1,6 +1,5 @@
 import FilesSearch from "./component/filesSearch";
 import FilesList from "./component/fileList";
-import defaultFiles from "./util/defaultFiles";
 import { toOBJ, toARR } from "./util/helper";
 import TabList from "./component/tabList";
 import React, { useState, useEffect } from "react";
@@ -12,9 +11,11 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { v4 as uuidv4 } from "uuid";
 import fileHelper from "./util/fileHelper";
+import useIpcRenderer from "./hook/useIpcRenderer";
 const { join,basename,extname,dirname } = window.require("path");
 const { remote, ipcRenderer } = window.require("electron");
 const Store = window.require("electron-store");
+const strogelocation = new Store({name:'strogelocation'});
 const recordStroge = new Store();
 
 
@@ -26,7 +27,23 @@ function App() {
   const [searchFiles, setSearchFiles] = useState([]);
   const activeFile = files[activeId];
   const arrFiles = toARR(files);
-  const localStroge = remote.app.getPath("documents");
+  const localStroge = strogelocation.get('strogelocation')|| remote.app.getPath("documents");
+
+ 
+ 
+  const saveFiles = () => {
+    console.log('save')
+    let newfile = files[activeId];
+    fileHelper.writeFiles(newfile.path,newfile.body).then(()=>{
+      if(unsaveId.includes(activeId)){
+        let unsaveids = unsaveId.filter(item => {
+          return item !==activeId;
+        })
+        setunsaveId(unsaveids);
+      }
+    })
+    
+  }
   const openFiles = openFilesID.map((id) => {
     return files[id];
   });
@@ -220,13 +237,17 @@ function App() {
       }
     })
   }
+  useIpcRenderer({
+    'create-new-file':createFile,
+    'save-edit-file':saveFiles,
+    'import-file':importFiles
+  })
   return (
     <div className="App row mx-0">
       <div className="col-3 px-0 left-panel">
         <FilesSearch
           title="我的云文档"
           startSearch={(value) => {
-            console.log(value);
             searchContent(value);
           }}
         ></FilesSearch>

@@ -1,5 +1,6 @@
 import React,{ useState,useEffect,useRef } from "react";
 import PropTypes from "prop-types";
+import useIpcRenderer from "../hook/useIpcRenderer";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch,faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
@@ -42,6 +43,9 @@ const FilesSearch = ({title,startSearch}) => {
         }
       
     }, [active]);
+    useIpcRenderer({
+        'search-file':searchBegin
+    })
     return (
         <div className="alert alert-primary d-flex justify-content-between align-items-center mb-0 no-border">
             {
